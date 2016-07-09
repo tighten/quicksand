@@ -13,9 +13,10 @@ class QuicksandServiceProvider extends ServiceProvider
             __DIR__.'/config/quicksand.php' => config_path('quicksand.php'),
         ]);
     }
-    
+
     public function register()
     {
         $this->app->singleton(RunForceDeletePolicy::class);
+        $this->commands([RunForceDeletePolicy::class]);
     }
 }
