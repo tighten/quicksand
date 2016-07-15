@@ -48,9 +48,11 @@ class DeleteOldSoftDeletes extends Command
     {
         $daysBeforeDeletion = empty($modelConfig['days']) ? $daysBeforeDeletion : $modelConfig['days'];
 
-        return [$modelName => DB::table((new $modelName)::getTableName())
+        $affectedRows = DB::table((new $modelName)->getTable())
             ->where('deleted_at', '<', Carbon::today()->subDays($daysBeforeDeletion))
-            ->delete()];
+            ->delete();
+
+        return [$modelName => $affectedRows];
     }
 
     private function logAffectedRows(Collection $deletedRows)
