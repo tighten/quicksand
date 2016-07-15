@@ -1,6 +1,6 @@
 <?php
 
-namespace TightenCo\Quicksand;
+namespace Tightenco\Quicksand;
 
 use Carbon\Carbon;
 use Illuminate\Console\Command;
