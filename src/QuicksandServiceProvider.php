@@ -15,7 +15,7 @@ class QuicksandServiceProvider extends ServiceProvider
 
     public function register()
     {
-        $this->app->singleton(RunForceDeletePolicy::class);
-        $this->commands([RunForceDeletePolicy::class]);
+        $this->app->singleton(DeleteOldSoftDeletes::class);
+        $this->commands([DeleteOldSoftDeletes::class]);
     }
 }
