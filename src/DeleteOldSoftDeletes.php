@@ -17,6 +17,7 @@ class DeleteOldSoftDeletes extends Command
     public function handle()
     {
         $deletedRows = $this->deleteOldSoftDeletes()
+            ->flatten(1)
             ->reject(function ($numRowsDeleted) {
                 return $numRowsDeleted === 0;
             });
@@ -30,7 +31,7 @@ class DeleteOldSoftDeletes extends Command
         $daysBeforeDeletion = config('quicksand.days');
 
         if (empty($daysBeforeDeletion)) {
-            return collect([]);
+            return new Collection;
         }
 
         return $models->map(function ($modelConfig, $modelName) use ($daysBeforeDeletion) {
@@ -40,16 +41,16 @@ class DeleteOldSoftDeletes extends Command
             }
 
             return $this->deleteOldSoftDeletesForModel($modelName, $modelConfig, $daysBeforeDeletion);
-        });
+        })->values();
     }
 
     private function deleteOldSoftDeletesForModel($modelName, $modelConfig, $daysBeforeDeletion)
     {
         $daysBeforeDeletion = empty($modelConfig['days']) ? $daysBeforeDeletion : $modelConfig['days'];
 
-        return DB::table((new $modelName)::getTableName())
+        return [$modelName => DB::table((new $modelName)::getTableName())
             ->where('deleted_at', '<', Carbon::today()->subDays($daysBeforeDeletion))
-            ->delete();
+            ->delete()];
     }
 
     private function logAffectedRows(Collection $deletedRows)
