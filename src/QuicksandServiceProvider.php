@@ -1,6 +1,6 @@
 <?php
 
-namespace TightenCo\Quicksand;
+namespace Tightenco\Quicksand;
 
 use Illuminate\Support\ServiceProvider;
 

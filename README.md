@@ -15,9 +15,9 @@ Quicksand is an Artisan command that you can run in your scheduler daily.
         'providers' => [
             ...
 
-            Tightenco\Quicksand::class,
+            Tightenco\QuicksandServiceProvider::class,
     ```
-3. Publish your config: `php artisan config:publish --provider="Tightenco\Quicksand"`
+3. Publish your config: `php artisan config:publish --provider="Tightenco\QuicksandServiceProvider"`
 4. Edit your config. Define which clsses you'd like to have Quicksand clean up for you, and how many days Quicksand should wait to clean up.
 5. Schedule the command in `app/Http/Console/Kernel.php`:
 
