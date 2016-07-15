@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Log;
 
 class RunForceDeletePolicy extends Command
 {
-    protected $signature = 'quicksand:run-force-delete-policy';
+    protected $signature = 'quicksand:run';
 
     protected $description = 'Force delete all soft deleted content older than X days';
 
