@@ -1,18 +1,30 @@
 {
     "name": "tightenco/quicksand",
-    "require": {
-        "laravel/framework": "5.0.*|5.1.*|5.2.*|5.3.*"
-    },
-    "license": "MIT",
+    "description": "Easily schedule regular cleanup of old soft-deleted Eloquent data.",
     "authors": [
         {
             "name": "Benson Lee",
             "email": "benson@tighten.co"
+        },
+        {
+            "name": "Matt Stauffer",
+            "email": "matt@tighten.co"
         }
     ],
+    "license": "MIT",
+    "require": {
+        "laravel/framework": "5.0.*|5.1.*|5.2.*|5.3.*"
+    },
+    "require-dev": {
+        "illuminate/database": "5.*",
+        "nesbot/carbon": "^1.21"
+    },
     "autoload": {
         "psr-4": {
             "Tightenco\\Quicksand\\": "src"
-        }
+        },
+        "classmap": [
+            "tests/FunctionalTestCase.php"
+        ]
     }
 }
