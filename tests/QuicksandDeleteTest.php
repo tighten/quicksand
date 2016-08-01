@@ -13,18 +13,18 @@ class Person extends \Illuminate\Database\Eloquent\Model
 
 class QuicksandDeleteTest extends FunctionalTestCase
 {
-    function setUp()
+    public function setUp()
     {
         parent::setUp();
         $this->migrate();
     }
 
-    function migrate()
+    public function migrate()
     {
         $this->migratePeopleTable();
     }
 
-    function migratePeopleTable()
+    public function migratePeopleTable()
     {
         DB::schema()->create('people', function ($table) {
             $table->increments('id');
@@ -34,18 +34,17 @@ class QuicksandDeleteTest extends FunctionalTestCase
         });
     }
 
-    function act()
+    public function act()
     {
         // @todo: Mock Illuminate\Config\Repository and inject:
         // $config = Mock object
         (new Tightenco\Quicksand\DeleteOldSoftDeletes($config))->handle();
     }
 
-    /** @test */
-    function it_deletes_old_records()
+    public function test_it_deletes_old_records()
     {
         $person = new Person(['name' => 'Benson']);
-        $person->deleted_at = Carbon::now()->subYear(); 
+        $person->deleted_at = Carbon::now()->subYear();
         $person->save();
 
         $this->act();
@@ -55,8 +54,7 @@ class QuicksandDeleteTest extends FunctionalTestCase
         $this->assertNull($lookup);
     }
 
-    /** @test */
-    function it_doesnt_delete_newer_records()
+    public function test_it_doesnt_delete_newer_records()
     {
         $person = new Person(['name' => 'Benson']);
         $person->deleted_at = Carbon::now();
