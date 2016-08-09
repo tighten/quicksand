@@ -17,7 +17,8 @@
     },
     "require-dev": {
         "illuminate/database": "5.*",
-        "nesbot/carbon": "^1.21"
+        "nesbot/carbon": "^1.21",
+        "mockery/mockery": "^0.9.5"
     },
     "autoload": {
         "psr-4": {
