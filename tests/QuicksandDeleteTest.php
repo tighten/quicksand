@@ -41,7 +41,7 @@ class QuicksandDeleteTest extends FunctionalTestCase
         $configSpy = Mockery::spy(Repository::class);
         $configSpy->shouldReceive('get')->with('quicksand.models')->andReturn(Person::class);
         $configSpy->shouldReceive('get')->with('quicksand.days')->andReturn(1);
-        (new DeleteOldSoftDeletes($configSpy))->handle();
+        (new DeleteOldSoftDeletes(new DB, $configSpy))->handle();
     }
 
     public function test_it_deletes_old_records()
