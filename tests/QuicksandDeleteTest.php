@@ -8,6 +8,7 @@ use Tightenco\Quicksand\DeleteOldSoftDeletes;
 
 class QuicksandDeleteTest extends PHPUnit_Framework_TestCase
 {
+    private $configSpy;
     private $manager;
 
     public function setUp()
