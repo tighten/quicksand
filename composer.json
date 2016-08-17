@@ -21,11 +21,11 @@
         "mockery/mockery": "^0.9.5"
     },
     "autoload": {
-        "psr-0": {
-            "": "tests"
-        },
         "psr-4": {
             "Tightenco\\Quicksand\\": "src"
-        }
+        },
+        "classmap": [
+            "tests"
+        ]
     }
 }
