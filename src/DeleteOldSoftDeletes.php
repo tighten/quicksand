@@ -3,9 +3,10 @@
 namespace Tightenco\Quicksand;
 
 use Carbon\Carbon;
+use Illuminate\Config\Repository as Config;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
+
 use Illuminate\Support\Facades\Log;
 
 class DeleteOldSoftDeletes extends Command
@@ -13,6 +14,15 @@ class DeleteOldSoftDeletes extends Command
     protected $signature = 'quicksand:run';
 
     protected $description = 'Force delete all soft deleted content older than X days';
+
+    private $config;
+
+    public function __construct(Config $config)
+    {
+        parent::__construct();
+
+        $this->config = $config;
+    }
 
     public function handle()
     {
@@ -27,8 +37,8 @@ class DeleteOldSoftDeletes extends Command
 
     private function deleteOldSoftDeletes()
     {
-        $models = collect(config('quicksand.models'));
-        $daysBeforeDeletion = config('quicksand.days');
+        $models = collect($this->config->get('quicksand.models'));
+        $daysBeforeDeletion = $this->config->get('quicksand.days');
 
         if (empty($daysBeforeDeletion)) {
             return new Collection;
@@ -48,16 +58,16 @@ class DeleteOldSoftDeletes extends Command
     {
         $daysBeforeDeletion = empty($modelConfig['days']) ? $daysBeforeDeletion : $modelConfig['days'];
 
-        $affectedRows = DB::table((new $modelName)->getTable())
+        $affectedRows = $modelName::onlyTrashed()
             ->where('deleted_at', '<', Carbon::today()->subDays($daysBeforeDeletion))
-            ->delete();
+            ->forceDelete();
 
         return [$modelName => $affectedRows];
     }
 
     private function logAffectedRows(Collection $deletedRows)
     {
-        if (! config('quicksand.log', false) || $deletedRows->isEmpty()) {
+        if (! $this->config->get('quicksand.log', false) || $deletedRows->isEmpty()) {
             return;
         }
 
