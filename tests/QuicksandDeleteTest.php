@@ -104,7 +104,6 @@ class QuicksandDeleteTest extends PHPUnit_Framework_TestCase
             ->andReturn(1);
 
         $this->expectException(Exception::class);
-        $this->expectExceptionMessage('');
 
         $this->act();
     }
