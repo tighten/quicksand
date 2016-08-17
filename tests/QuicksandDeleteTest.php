@@ -3,7 +3,9 @@
 use Carbon\Carbon;
 use Illuminate\Config\Repository;
 use Illuminate\Database\Capsule\Manager;
+use Illuminate\Support\Facades\Log;
 use Models\Person;
+use Models\Place;
 use Tightenco\Quicksand\DeleteOldSoftDeletes;
 
 class QuicksandDeleteTest extends PHPUnit_Framework_TestCase
@@ -38,6 +40,10 @@ class QuicksandDeleteTest extends PHPUnit_Framework_TestCase
             $table->string('name');
             $table->timestamps();
             $table->softDeletes();
+        });
+        $this->manager->schema()->create('places', function ($table) {
+            $table->increments('id');
+            $table->string('name');
         });
     }
 
@@ -85,5 +91,20 @@ class QuicksandDeleteTest extends PHPUnit_Framework_TestCase
         $lookup = Person::withTrashed()->find($person->id);
 
         $this->assertNotNull($lookup);
+    }
+
+    public function test_it_throws_exception_if_soft_deletes_are_not_enabled_on_modeL()
+    {
+        $this->configSpy->shouldReceive('get')
+            ->with('quicksand.models')
+            ->andReturn(Place::class);
+
+        $this->configSpy->shouldReceive('get')
+            ->with('quicksand.days')
+            ->andReturn(1);
+
+        $this->expectException(Exception::class);
+
+        $this->act();
     }
 }

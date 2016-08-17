@@ -3,10 +3,11 @@
 namespace Tightenco\Quicksand;
 
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Config\Repository as Config;
 use Illuminate\Console\Command;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
-
 use Illuminate\Support\Facades\Log;
 
 class DeleteOldSoftDeletes extends Command
@@ -48,6 +49,10 @@ class DeleteOldSoftDeletes extends Command
             if (! is_array($modelConfig)) {
                 $modelName = $modelConfig;
                 $modelConfig = [];
+            }
+
+            if (! method_exists($modelName, 'bootSoftDeletes')) {
+                throw new Exception("$modelName does not have SoftDeletes enabled");
             }
 
             return $this->deleteOldSoftDeletesForModel($modelName, $modelConfig, $daysBeforeDeletion);
