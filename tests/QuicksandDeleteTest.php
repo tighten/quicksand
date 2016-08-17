@@ -2,27 +2,37 @@
 
 use Carbon\Carbon;
 use Illuminate\Config\Repository;
-use Illuminate\Database\Capsule\Manager as DB;
+use Illuminate\Database\Capsule\Manager;
 use Models\Person;
 use Tightenco\Quicksand\DeleteOldSoftDeletes;
 
+class QuicksandDeleteTest extends PHPUnit_Framework_TestCase
 {
-    use \Illuminate\Database\Eloquent\SoftDeletes;
+    private $manager;
 
     public function setUp()
     {
-        parent::setUp();
+        $this->configSpy = Mockery::spy(Repository::class);
+
+        $this->configureDatabase();
         $this->migrate();
     }
 
-    public function migrate()
+    private function configureDatabase()
     {
-        $this->migratePeopleTable();
+        $this->manager = new Manager;
+        $this->manager->addConnection([
+            'driver'    => 'sqlite',
+            'database'  => ':memory:',
+        ]);
+
+        $this->manager->setAsGlobal();
+        $this->manager->bootEloquent();
     }
 
-    public function migratePeopleTable()
+    private function migrate()
     {
-        DB::schema()->create('people', function ($table) {
+        $this->manager->schema()->create('people', function ($table) {
             $table->increments('id');
             $table->string('name');
             $table->timestamps();
@@ -32,7 +42,7 @@ use Tightenco\Quicksand\DeleteOldSoftDeletes;
 
     public function act()
     {
-        (new DeleteOldSoftDeletes(new DB, $configSpy))->handle();
+        (new DeleteOldSoftDeletes($this->manager->getDatabaseManager(), $this->configSpy))->handle();
     }
 
     public function test_it_deletes_old_records()

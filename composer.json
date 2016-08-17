@@ -26,9 +26,6 @@
         },
         "psr-4": {
             "Tightenco\\Quicksand\\": "src"
-        },
-        "classmap": [
-            "tests/FunctionalTestCase.php"
-        ]
+        }
     }
 }
