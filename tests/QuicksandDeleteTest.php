@@ -10,12 +10,13 @@ use Tightenco\Quicksand\DeleteOldSoftDeletes;
 
 class QuicksandDeleteTest extends PHPUnit_Framework_TestCase
 {
-    private $configSpy;
+    private $configMock;
     private $manager;
 
     public function setUp()
     {
-        $this->configSpy = Mockery::spy(Repository::class);
+        $this->configMock = Mockery::mock(Repository::class);
+        $this->configMock->shouldIgnoreMissing();
 
         $this->configureDatabase();
         $this->migrate();
@@ -49,7 +50,7 @@ class QuicksandDeleteTest extends PHPUnit_Framework_TestCase
 
     public function act()
     {
-        (new DeleteOldSoftDeletes($this->configSpy))->handle();
+        (new DeleteOldSoftDeletes($this->configMock))->handle();
     }
 
     public function test_it_deletes_old_records()
@@ -58,10 +59,10 @@ class QuicksandDeleteTest extends PHPUnit_Framework_TestCase
         $person->deleted_at = Carbon::now()->subYear();
         $person->save();
 
-        $this->configSpy->shouldReceive('get')
+        $this->configMock->shouldReceive('get')
             ->with('quicksand.models')
             ->andReturn(Person::class);
-        $this->configSpy->shouldReceive('get')
+        $this->configMock->shouldReceive('get')
             ->with('quicksand.days')
             ->andReturn(1);
 
@@ -78,11 +79,11 @@ class QuicksandDeleteTest extends PHPUnit_Framework_TestCase
         $person->deleted_at = Carbon::now();
         $person->save();
 
-        $this->configSpy->shouldReceive('get')
+        $this->configMock->shouldReceive('get')
             ->with('quicksand.models')
             ->andReturn(Person::class);
 
-        $this->configSpy->shouldReceive('get')
+        $this->configMock->shouldReceive('get')
             ->with('quicksand.days')
             ->andReturn(1);
 
@@ -95,11 +96,11 @@ class QuicksandDeleteTest extends PHPUnit_Framework_TestCase
 
     public function test_it_throws_exception_if_soft_deletes_are_not_enabled_on_modeL()
     {
-        $this->configSpy->shouldReceive('get')
+        $this->configMock->shouldReceive('get')
             ->with('quicksand.models')
             ->andReturn(Place::class);
 
-        $this->configSpy->shouldReceive('get')
+        $this->configMock->shouldReceive('get')
             ->with('quicksand.days')
             ->andReturn(1);
 
