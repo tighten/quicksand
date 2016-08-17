@@ -3,18 +3,12 @@
 use Carbon\Carbon;
 use Illuminate\Config\Repository;
 use Illuminate\Database\Capsule\Manager as DB;
+use Models\Person;
 use Tightenco\Quicksand\DeleteOldSoftDeletes;
 
-// @todo move this somewhere
-class Person extends \Illuminate\Database\Eloquent\Model
 {
     use \Illuminate\Database\Eloquent\SoftDeletes;
 
-    protected $fillable = ['name'];
-}
-
-class QuicksandDeleteTest extends FunctionalTestCase
-{
     public function setUp()
     {
         parent::setUp();
