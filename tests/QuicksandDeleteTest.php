@@ -23,8 +23,8 @@ class QuicksandDeleteTest extends PHPUnit_Framework_TestCase
     {
         $this->manager = new Manager;
         $this->manager->addConnection([
-            'driver'    => 'sqlite',
-            'database'  => ':memory:',
+            'driver' => 'sqlite',
+            'database' => ':memory:',
         ]);
 
         $this->manager->setAsGlobal();
@@ -75,7 +75,7 @@ class QuicksandDeleteTest extends PHPUnit_Framework_TestCase
         $this->configSpy->shouldReceive('get')
             ->with('quicksand.models')
             ->andReturn(Person::class);
-        
+
         $this->configSpy->shouldReceive('get')
             ->with('quicksand.days')
             ->andReturn(1);
