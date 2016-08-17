@@ -43,7 +43,7 @@ class QuicksandDeleteTest extends PHPUnit_Framework_TestCase
 
     public function act()
     {
-        (new DeleteOldSoftDeletes($this->manager->getDatabaseManager(), $this->configSpy))->handle();
+        (new DeleteOldSoftDeletes($this->configSpy))->handle();
     }
 
     public function test_it_deletes_old_records()

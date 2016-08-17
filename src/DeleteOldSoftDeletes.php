@@ -5,7 +5,6 @@ namespace Tightenco\Quicksand;
 use Carbon\Carbon;
 use Illuminate\Config\Repository as Config;
 use Illuminate\Console\Command;
-use Illuminate\Database\DatabaseManager as DB;
 use Illuminate\Support\Collection;
 
 use Illuminate\Support\Facades\Log;
@@ -16,14 +15,11 @@ class DeleteOldSoftDeletes extends Command
 
     protected $description = 'Force delete all soft deleted content older than X days';
 
-    private $db;
     private $config;
 
-    public function __construct(DB $db, Config $config)
+    public function __construct(Config $config)
     {
         parent::__construct();
-
-        $this->db = $db;
 
         $this->config = $config;
     }
@@ -62,9 +58,9 @@ class DeleteOldSoftDeletes extends Command
     {
         $daysBeforeDeletion = empty($modelConfig['days']) ? $daysBeforeDeletion : $modelConfig['days'];
 
-        $affectedRows = $this->db->table((new $modelName)->getTable())
+        $affectedRows = $modelName::onlyTrashed()
             ->where('deleted_at', '<', Carbon::today()->subDays($daysBeforeDeletion))
-            ->delete();
+            ->forceDelete();
 
         return [$modelName => $affectedRows];
     }
