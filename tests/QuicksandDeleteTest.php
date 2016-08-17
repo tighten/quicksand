@@ -32,9 +32,6 @@ use Tightenco\Quicksand\DeleteOldSoftDeletes;
 
     public function act()
     {
-        $configSpy = Mockery::spy(Repository::class);
-        $configSpy->shouldReceive('get')->with('quicksand.models')->andReturn(Person::class);
-        $configSpy->shouldReceive('get')->with('quicksand.days')->andReturn(1);
         (new DeleteOldSoftDeletes(new DB, $configSpy))->handle();
     }
 
@@ -43,6 +40,13 @@ use Tightenco\Quicksand\DeleteOldSoftDeletes;
         $person = new Person(['name' => 'Benson']);
         $person->deleted_at = Carbon::now()->subYear();
         $person->save();
+
+        $this->configSpy->shouldReceive('get')
+            ->with('quicksand.models')
+            ->andReturn(Person::class);
+        $this->configSpy->shouldReceive('get')
+            ->with('quicksand.days')
+            ->andReturn(1);
 
         $this->act();
 
@@ -56,6 +60,14 @@ use Tightenco\Quicksand\DeleteOldSoftDeletes;
         $person = new Person(['name' => 'Benson']);
         $person->deleted_at = Carbon::now();
         $person->save();
+
+        $this->configSpy->shouldReceive('get')
+            ->with('quicksand.models')
+            ->andReturn(Person::class);
+        
+        $this->configSpy->shouldReceive('get')
+            ->with('quicksand.days')
+            ->andReturn(1);
 
         $this->act();
 
