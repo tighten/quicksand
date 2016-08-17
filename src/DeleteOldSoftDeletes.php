@@ -51,7 +51,7 @@ class DeleteOldSoftDeletes extends Command
                 $modelConfig = [];
             }
 
-            if (! in_array(SoftDeletes::class, class_uses($modelName))) {
+            if (! method_exists($modelName, 'bootSoftDeletes')) {
                 throw new Exception("$modelName does not have SoftDeletes enabled");
             }
 

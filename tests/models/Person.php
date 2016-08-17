@@ -2,12 +2,9 @@
 
 namespace Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Person extends Model
+class Person extends BaseModel
 {
-    use SoftDeletes;
-
     protected $fillable = ['name'];
 }
