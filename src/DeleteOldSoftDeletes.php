@@ -27,13 +27,11 @@ class DeleteOldSoftDeletes extends Command
 
     public function handle()
     {
-        $deletedRows = $this->deleteOldSoftDeletes()
-            ->flatten(1)
-            ->reject(function ($numRowsDeleted) {
-                return $numRowsDeleted === 0;
-            });
+        $deletedRows = $this->deleteOldSoftDeletes();
 
-        $this->logAffectedRows($deletedRows);
+        if ($this->config->get('quicksand.log', false)) {
+            $this->logAffectedRows($deletedRows);
+        }
     }
 
     private function deleteOldSoftDeletes()
@@ -72,14 +70,30 @@ class DeleteOldSoftDeletes extends Command
 
     private function logAffectedRows(Collection $deletedRows)
     {
-        if ($this->config->get('quicksand.log', false) !== true || $deletedRows->isEmpty()) {
+        $preparedRows = $this->prepareForLogging($deletedRows);
+
+        if (! $this->config->get('quicksand.log', false) || empty($preparedRows)) {
             return;
         }
 
         Log::info(sprintf(
             '%s force deleted these number of rows: %s',
             get_class($this),
-            print_r($deletedRows->all(), true)
+            print_r($preparedRows, true)
         ));
+    }
+
+    private function prepareForLogging($rawDeletedRows)
+    {
+        return $rawDeletedRows->reduce(function ($carry, $modelAndNumDeleted) {
+            foreach ($modelAndNumDeleted as $model => $numDeleted) {
+                if ($numDeleted === 0) {
+                    continue;
+                }
+                $carry[$model] = $numDeleted;
+            }
+
+            return $carry;
+        }, []);
     }
 }
