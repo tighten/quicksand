@@ -2,7 +2,10 @@
 
 use Carbon\Carbon;
 use Illuminate\Config\Repository;
+use Illuminate\Container\Container;
 use Illuminate\Database\Capsule\Manager;
+use Illuminate\Log\Writer;
+use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Facades\Log;
 use Models\Person;
 use Models\Place;
@@ -20,6 +23,8 @@ class QuicksandDeleteTest extends PHPUnit_Framework_TestCase
 
         $this->configureDatabase();
         $this->migrate();
+
+        $this->configureApp();
     }
 
     private function configureDatabase()
@@ -46,6 +51,14 @@ class QuicksandDeleteTest extends PHPUnit_Framework_TestCase
             $table->increments('id');
             $table->string('name');
         });
+    }
+
+    private function configureApp()
+    {
+        $app = new Container();
+        $app->singleton('app', Container::class);
+        Facade::setFacadeApplication($app);
+        $app->instance('log', Mockery::spy(Writer::class));
     }
 
     public function act()
@@ -107,5 +120,29 @@ class QuicksandDeleteTest extends PHPUnit_Framework_TestCase
         $this->expectException(Exception::class);
 
         $this->act();
+    }
+
+    public function test_it_logs_if_deleted_entries()
+    {
+        $person = new Person(['name' => 'Benson']);
+        $person->deleted_at = Carbon::now()->subYear();
+        $person->save();
+
+        $this->configMock->shouldReceive('get')
+            ->with('quicksand.models')
+            ->andReturn(Person::class);
+        $this->configMock->shouldReceive('get')
+            ->with('quicksand.days')
+            ->andReturn(1);
+        $this->configMock->shouldReceive('get')
+            ->with('quicksand.log', false)
+            ->andReturn(true);
+
+        $this->act();
+
+        Log::shouldHaveReceived('info')
+            ->with(Mockery::on(function ($arg) {
+                return str_contains($arg, Person::class);
+            }));
     }
 }

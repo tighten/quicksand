@@ -72,7 +72,7 @@ class DeleteOldSoftDeletes extends Command
 
     private function logAffectedRows(Collection $deletedRows)
     {
-        if (! $this->config->get('quicksand.log', false) || $deletedRows->isEmpty()) {
+        if ($this->config->get('quicksand.log', false) !== true || $deletedRows->isEmpty()) {
             return;
         }
 
