@@ -13,7 +13,7 @@
     ],
     "license": "MIT",
     "require": {
-        "laravel/framework": "5.0.*|5.1.*|5.2.*|5.3.*|5.4.*"
+        "laravel/framework": "5.0.*|5.1.*|5.2.*|5.3.*|5.4.*|5.5.*"
     },
     "require-dev": {
         "illuminate/database": "5.*",
@@ -28,5 +28,12 @@
         "classmap": [
             "tests"
         ]
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Tightenco\\Quicksand\\QuicksandServiceProvider"
+            ]
+        }
     }
 }
