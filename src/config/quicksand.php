@@ -9,8 +9,8 @@ return [
 
     // List of models to run Quicksand on
     'models' => [
-        // Example::class,
-        // User::class => [
+        // \App\Example::class,
+        // \App\User::class => [
         //     'days' => '30' // per-model days setting override
         // ]
     ]
