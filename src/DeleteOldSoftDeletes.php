@@ -76,9 +76,7 @@ class DeleteOldSoftDeletes extends Command
         if (! $this->config->get('quicksand.log', false) || empty($preparedRows)) {
             return;
         }
-        /**
-         * @var \Illuminate\Contracts\Logging\Log $monolog
-         */
+        
         if (! $this->config->get('quicksand.custom_log_file', false)) {
             Log::useFiles($this->config->get('quicksand.custom_log_file'));
         }
