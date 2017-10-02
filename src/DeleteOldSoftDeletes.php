@@ -9,7 +9,6 @@ use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
-use Monolog\Logger;
 
 class DeleteOldSoftDeletes extends Command
 {
@@ -77,7 +76,7 @@ class DeleteOldSoftDeletes extends Command
             return;
         }
         
-        if (! $this->config->get('quicksand.custom_log_file', false)) {
+        if (!! $this->config->get('quicksand.custom_log_file', false)) {
             Log::useFiles($this->config->get('quicksand.custom_log_file'));
         }
 
