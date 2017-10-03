@@ -77,7 +77,10 @@ class DeleteOldSoftDeletes extends Command
         }
         
         if (!! $this->config->get('quicksand.custom_log_file', false)) {
+            $logHandlers = Log::getMonolog()->getHandlers();
+            Log::getMonolog()->setHandlers([]);
             Log::useFiles($this->config->get('quicksand.custom_log_file'));
+
         }
 
         Log::info(sprintf(
@@ -85,6 +88,10 @@ class DeleteOldSoftDeletes extends Command
             get_class($this),
             print_r($preparedRows, true)
         ));
+
+        if (!! $this->config->get('quicksand.custom_log_file', false)) {
+            Log::getMonolog()->setHandlers($logHandlers);
+        }
     }
 
     private function prepareForLogging($rawDeletedRows)
