@@ -4,14 +4,17 @@ use Carbon\Carbon;
 use Illuminate\Config\Repository;
 use Illuminate\Container\Container;
 use Illuminate\Database\Capsule\Manager;
+use Illuminate\Log\Logger;
 use Illuminate\Log\Writer;
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\Facades\Log;
 use Models\Person;
 use Models\Place;
+use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Tightenco\Quicksand\DeleteOldSoftDeletes;
 
-class QuicksandDeleteTest extends PHPUnit_Framework_TestCase
+class QuicksandDeleteTest extends TestCase
 {
     private $configMock;
     private $manager;
@@ -25,6 +28,13 @@ class QuicksandDeleteTest extends PHPUnit_Framework_TestCase
         $this->migrate();
 
         $this->configureApp();
+    }
+
+    public function tearDown()
+    {
+        $this->addToAssertionCount(
+            Mockery::getContainer()->mockery_getExpectationCount()
+        );
     }
 
     private function configureDatabase()
@@ -58,7 +68,8 @@ class QuicksandDeleteTest extends PHPUnit_Framework_TestCase
         $app = new Container();
         $app->singleton('app', Container::class);
         Facade::setFacadeApplication($app);
-        $app->instance('log', Mockery::spy(Writer::class));
+        $app->instance('log', Mockery::spy(Writer::class)); // <= Laravel 5.5 support
+        $app->instance(LoggerInterface::class, Mockery::spy(Logger::class)); // >= Laravel 5.6 support
     }
 
     public function act()
