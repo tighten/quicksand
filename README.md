@@ -1,5 +1,7 @@
 ![](https://raw.githubusercontent.com/tightenco/quicksand/master/quicksand-logo.png)
 
+[ ![Codeship Status for tightenco/quicksand](https://app.codeship.com/projects/a9e67790-46e9-0134-a8cb-3a2b7d7aa9d2/status?branch=master)](https://app.codeship.com/projects/169050)
+
 # Quicksand
 
 Schedule a force delete of your soft deleted Eloquent models after they've been soft deleted for a given period of time.
