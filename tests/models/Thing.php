@@ -2,7 +2,7 @@
 
 namespace Models;
 
-class Person extends BaseModel
+class Thing extends BaseModel
 {
     protected $fillable = ['name'];
 }

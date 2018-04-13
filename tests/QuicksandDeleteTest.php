@@ -1,15 +1,14 @@
 <?php
 
-use Carbon\Carbon;
 use Illuminate\Config\Repository;
 use Illuminate\Container\Container;
 use Illuminate\Database\Capsule\Manager;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Log\Logger;
-use Illuminate\Log\Writer;
 use Illuminate\Support\Facades\Facade;
-use Illuminate\Support\Facades\Log;
 use Models\Person;
 use Models\Place;
+use Models\Thing;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Tightenco\Quicksand\DeleteOldSoftDeletes;
@@ -18,23 +17,18 @@ class QuicksandDeleteTest extends TestCase
 {
     private $configMock;
     private $manager;
+    private $oneYearAgo;
+    private $now;
 
     public function setUp()
     {
-        $this->configMock = Mockery::mock(Repository::class);
-        $this->configMock->shouldIgnoreMissing();
+        $this->configMock = Mockery::mock(Repository::class)->makePartial();
+        $this->oneYearAgo = (new DateTime)->sub(new DateInterval('P1Y'))->format('Y-m-d H:i:s');
+        $this->now = (new DateTime)->format('Y-m-d H:i:s');
 
         $this->configureDatabase();
         $this->migrate();
-
         $this->configureApp();
-    }
-
-    public function tearDown()
-    {
-        $this->addToAssertionCount(
-            Mockery::getContainer()->mockery_getExpectationCount()
-        );
     }
 
     private function configureDatabase()
@@ -51,109 +45,199 @@ class QuicksandDeleteTest extends TestCase
 
     private function migrate()
     {
-        $this->manager->schema()->create('people', function ($table) {
+        $this->manager->schema()->create('people', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
             $table->timestamps();
             $table->softDeletes();
         });
-        $this->manager->schema()->create('places', function ($table) {
+
+        $this->manager->schema()->create('places', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
+        });
+
+        $this->manager->schema()->create('things', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name');
+            $table->timestamps();
+            $table->softDeletes();
         });
     }
 
     private function configureApp()
     {
-        $app = new Container();
+        $app = new Container;
         $app->singleton('app', Container::class);
         Facade::setFacadeApplication($app);
-        $app->instance('log', Mockery::spy(Writer::class)); // <= Laravel 5.5 support
-        $app->instance(LoggerInterface::class, Mockery::spy(Logger::class)); // >= Laravel 5.6 support
+        $app->instance(LoggerInterface::class, Mockery::spy(Logger::class));
     }
 
-    public function act()
+    private function mockConfiguration($configuration = null)
+    {
+        $this->configMock->allows()
+            ->get('quicksand.days')
+            ->andReturn($configuration['days'] ?? 1);
+
+        $this->configMock->allows()
+            ->get('quicksand.log', false)
+            ->andReturn($configuration['log'] ?? true);
+
+        $this->configMock->allows()
+            ->get('quicksand.custom_log_file', false)
+            ->andReturn($configuration['custom_log_file'] ?? false);
+
+        $this->configMock->allows()
+            ->get('quicksand.models')
+            ->andReturn($configuration['models'] ?? [Person::class]);
+    }
+
+    private function createOldDeletedPerson()
+    {
+        return $this->createPerson(true);
+    }
+
+    private function createNewlyDeletedPerson()
+    {
+        return $this->createPerson(false);
+    }
+
+    private function createPerson($old = true)
+    {
+        $person = new Person(['name' => 'Jose']);
+        $person->deleted_at = $old ? $this->oneYearAgo : $this->now;
+        $person->save();
+        return $person;
+    }
+
+    private function createOldDeletedThing()
+    {
+        $thing = new Thing(['name' => 'Coffee']);
+        $thing->deleted_at = $this->oneYearAgo;
+        $thing->save();
+        return $thing;
+    }
+
+    private function act()
     {
         (new DeleteOldSoftDeletes($this->configMock))->handle();
     }
 
-    public function test_it_deletes_old_records()
+    /** @test */
+    public function it_deletes_old_records()
     {
-        $person = new Person(['name' => 'Benson']);
-        $person->deleted_at = Carbon::now()->subYear();
-        $person->save();
+        $this->mockConfiguration();
 
-        $this->configMock->shouldReceive('get')
-            ->with('quicksand.models')
-            ->andReturn(Person::class);
-        $this->configMock->shouldReceive('get')
-            ->with('quicksand.days')
-            ->andReturn(1);
+        $person = $this->createOldDeletedPerson();
+
+        $this->assertNotNull(Person::withTrashed()->find($person->id));
 
         $this->act();
 
-        $lookup = Person::withTrashed()->find($person->id);
-
-        $this->assertNull($lookup);
+        $this->assertNull(Person::withTrashed()->find($person->id));
     }
 
-    public function test_it_doesnt_delete_newer_records()
+    /** @test */
+    public function it_does_not_delete_newer_records()
     {
-        $person = new Person(['name' => 'Benson']);
-        $person->deleted_at = Carbon::now();
-        $person->save();
-
-        $this->configMock->shouldReceive('get')
-            ->with('quicksand.models')
-            ->andReturn(Person::class);
-
-        $this->configMock->shouldReceive('get')
-            ->with('quicksand.days')
-            ->andReturn(1);
+        $person = $this->createNewlyDeletedPerson();
 
         $this->act();
 
-        $lookup = Person::withTrashed()->find($person->id);
-
-        $this->assertNotNull($lookup);
+        $this->assertNotNull(Person::withTrashed()->find($person->id));
     }
 
-    public function test_it_throws_exception_if_soft_deletes_are_not_enabled_on_modeL()
+    /** @test */
+    public function it_throws_exception_if_soft_deletes_are_not_enabled_on_model()
     {
-        $this->configMock->shouldReceive('get')
-            ->with('quicksand.models')
-            ->andReturn(Place::class);
-
-        $this->configMock->shouldReceive('get')
-            ->with('quicksand.days')
-            ->andReturn(1);
+        $this->mockConfiguration(['models' => [Place::class]]);
 
         $this->expectException(Exception::class);
 
         $this->act();
     }
 
-    public function test_it_logs_if_deleted_entries()
+    /** @test */
+    public function it_writes_to_logs_if_entries_are_deleted()
     {
-        $person = new Person(['name' => 'Benson']);
-        $person->deleted_at = Carbon::now()->subYear();
-        $person->save();
+        $this->mockConfiguration();
+        $spy = Mockery::spy(Logger::class);
+        $expectedLogOutput = sprintf(
+            'Tightenco\Quicksand\DeleteOldSoftDeletes force deleted these number of rows: %s',
+            print_r(['Models\Person' => 1], true)
+        );
 
-        $this->configMock->shouldReceive('get')
-            ->with('quicksand.models')
-            ->andReturn(Person::class);
-        $this->configMock->shouldReceive('get')
-            ->with('quicksand.days')
-            ->andReturn(1);
-        $this->configMock->shouldReceive('get')
-            ->with('quicksand.log', false)
-            ->andReturn(true);
+        $this->createOldDeletedPerson();
 
         $this->act();
 
-        Log::shouldHaveReceived('info')
-            ->with(Mockery::on(function ($arg) {
-                return str_contains($arg, Person::class);
-            }));
+        $spy->allows()->info($expectedLogOutput);
+    }
+
+    /** @test */
+    public function it_will_delete_rows_from_multiple_tables_if_config_is_set_for_it()
+    {
+        $this->mockConfiguration(['models' => [Person::class, Thing::class]]);
+
+        $person = $this->createOldDeletedPerson();
+        $this->assertNotNull(Person::withTrashed()->find($person->id));
+
+        $thing = $this->createOldDeletedThing();
+        $this->assertNotNull(Thing::withTrashed()->find($thing->id));
+
+        $this->act();
+
+        $this->assertNull(Person::withTrashed()->find($person->id));
+        $this->assertNull(Thing::withTrashed()->find($thing->id));
+    }
+
+    /** @test */
+    public function it_does_not_delete_anything_if_days_before_deletion_is_not_set()
+    {
+        $this->mockConfiguration(['days' => '']);
+
+        $person = $this->createOldDeletedPerson();
+        $this->assertNotNull(Person::withTrashed()->find($person->id));
+
+        $this->act();
+
+        $this->assertNotNull(Person::withTrashed()->find($person->id));
+    }
+
+    /** @test */
+    public function it_does_not_write_to_logs_if_there_are_no_deletable_records()
+    {
+        $this->mockConfiguration();
+
+        $mock = Mockery::mock(Logger::class);
+        $mock->shouldNotReceive('info');
+
+        $this->createNewlyDeletedPerson();
+
+        $this->act();
+    }
+
+    /** @test */
+    public function it_sends_logs_to_a_custom_log_file()
+    {
+        $this->mockConfiguration(['custom_log_file' => __DIR__.'/storage/logs/custom.log']);
+        $spy = Mockery::spy(Logger::class);
+        $expectedLogOutput = sprintf(
+            'Tightenco\Quicksand\DeleteOldSoftDeletes force deleted these number of rows: %s',
+            print_r(['Models\Person' => 1], true)
+        );
+
+        $this->createOldDeletedPerson();
+
+        $this->act();
+
+        $spy->allows()->info($expectedLogOutput);
+    }
+
+    public function tearDown()
+    {
+        $this->addToAssertionCount(
+            Mockery::getContainer()->mockery_getExpectationCount()
+        );
     }
 }
