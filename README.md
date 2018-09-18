@@ -1,12 +1,18 @@
 ![](https://raw.githubusercontent.com/tightenco/quicksand/master/quicksand-logo.png)
 
+[ ![Codeship Status for tightenco/quicksand](https://app.codeship.com/projects/a9e67790-46e9-0134-a8cb-3a2b7d7aa9d2/status?branch=master)](https://app.codeship.com/projects/169050)
+
 # Quicksand
 
 Schedule a force delete of your soft deleted Eloquent models after they've been soft deleted for a given period of time.
 
 Quicksand is an Artisan command that you can run in your scheduler daily.
 
-## Installation instructions
+### Using an older version of PHP?
+
+If you're using PHP 7.0 or lower, please use version 0.2 of this package.
+
+## Installation
 
 1. Add Quicksand to your Composer file: `composer require tightenco/quicksand`
 2. Register the Quicksand Service provider in `config/app.php`:
@@ -28,3 +34,20 @@ Quicksand is an Artisan command that you can run in your scheduler daily.
                 ->daily();
         }
     ```
+    
+## Versioning
+
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/tightenco/quicksand/tags). 
+
+## Authors
+
+* **Benson Lee** - [besologic](https://github.com/besologic)
+* **Matt Stauffer** - [mattstauffer](https://github.com/mattstauffer)
+
+See also the list of [contributors](https://github.com/tightenco/quicksand/graphs/contributors) who participated in this project.
+
+This package is developed and maintained by [Tighten](https://tighten.co).
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE) file for details
