@@ -76,21 +76,20 @@ class DeleteOldSoftDeletes extends Command
             return;
         }
 
-        if ((bool) $this->config->get('quicksand.custom_log_file', false)) {
-            $logHandlers = Log::getHandlers();
-            Log::setHandlers([]);
-            Log::useFiles($this->config->get('quicksand.custom_log_file'));
+        if (! $this->config->get('logging.channels.quicksand', false)) {
+            $this->config->set([
+                'logging.channels.quicksand' => [
+                    'level' => 'info',
+                    'channels' => ['single'],
+                ],
+            ]);
         }
 
-        Log::info(sprintf(
+        Log::channel('quicksand')->info(sprintf(
             '%s force deleted these number of rows: %s',
             get_class($this),
             print_r($preparedRows, true)
         ));
-
-        if ((bool) $this->config->get('quicksand.custom_log_file', false)) {
-            Log::setHandlers($logHandlers);
-        }
     }
 
     private function prepareForLogging($rawDeletedRows)
