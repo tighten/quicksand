@@ -2,7 +2,12 @@
 
 namespace Models;
 
-class Thing extends BaseModel
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Thing extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = ['name'];
 }
