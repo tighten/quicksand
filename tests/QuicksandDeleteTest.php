@@ -4,11 +4,12 @@ use Illuminate\Support\Facades\Log;
 use Models\Person;
 use Models\Place;
 use Models\Thing;
-use Tightenco\Quicksand\DeleteOldSoftDeletes;
 use Monolog\Logger;
 use Monolog\Handler\TestHandler;
+use Orchestra\Testbench\TestCase;
+use Tightenco\Quicksand\DeleteOldSoftDeletes;
 
-class QuicksandDeleteTest extends \Orchestra\Testbench\TestCase
+class QuicksandDeleteTest extends TestCase
 {
     public $defaultQuicksandConfig = [
         'days' => 30,
