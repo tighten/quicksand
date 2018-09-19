@@ -76,9 +76,10 @@ class DeleteOldSoftDeletes extends Command
             return;
         }
 
-        if (! $this->config->get('logging.channels.quicksand', false)) {
+        if (! $this->config->has('logging.channels.quicksand')) {
             $this->config->set([
                 'logging.channels.quicksand' => [
+                    'driver' => 'stack',
                     'level' => 'info',
                     'channels' => ['single'],
                 ],
