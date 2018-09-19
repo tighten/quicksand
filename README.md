@@ -8,14 +8,16 @@ Schedule a force delete of your soft deleted Eloquent models after they've been 
 
 Quicksand is an Artisan command that you can run in your scheduler daily.
 
-### Using an older version of PHP?
+## Requirements
 
-If you're using PHP 7.0 or lower, please use version 0.2 of this package.
+- If you are using Laravel 5.6 or higher, use version `2.0` of this package.
+- If you are using Laravel 5.5 and running PHP 7.1 or higher, use version `1.0` of this package.
+- If you are using Laravel 5.4 or lower, or PHP 7.0 or lower, please use version `0.2` of this package.
 
 ## Installation
 
 1. Add Quicksand to your Composer file: `composer require tightenco/quicksand`
-2. Register the Quicksand Service provider in `config/app.php`:
+2. Register the Quicksand Service provider in `config/app.php` (you can skip this step if your version of Laravel supports package auto-discovery):
     
     ```php
         'providers' => [
@@ -24,7 +26,7 @@ If you're using PHP 7.0 or lower, please use version 0.2 of this package.
             Tightenco\Quicksand\QuicksandServiceProvider::class,
     ```
 3. Publish your config: `php artisan vendor:publish --provider="Tightenco\Quicksand\QuicksandServiceProvider"`
-4. Edit your config. Define which classes you'd like to have Quicksand clean up for you, and how many days Quicksand should wait to clean up.
+4. Edit your config. Define which classes you'd like to have Quicksand clean up for you, how many days Quicksand should wait to clean up, and whether or not the results should be logged.
 5. Schedule the command in `app/Console/Kernel.php`:
 
     ```php
@@ -34,7 +36,25 @@ If you're using PHP 7.0 or lower, please use version 0.2 of this package.
                 ->daily();
         }
     ```
-    
+### Using a Custom Log File
+
+If you are using Laravel 5.6 or higher, you can customize the logger Quicksand uses by adding a `quicksand` channel to your `logging.php` config file like so:
+
+```php
+'channels' => [
+    /* ... */
+    'quicksand' => [
+        'driver' => 'single',
+        'path' => storage_path('logs/quicksand.log'),
+        'level' => 'info',
+    ],
+]
+```
+
+If you are using Laravel 5.5 or lower, you can customize the logger Quicksand uses by editing the `custom_log_file` option in your `quicksand.php` config file.
+
+By default, Quicksand will log to the standard `laravel.log` file.
+
 ## Versioning
 
 We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/tightenco/quicksand/tags). 
