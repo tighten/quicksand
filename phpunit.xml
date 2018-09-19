@@ -8,13 +8,9 @@
          convertWarningsToExceptions="true"
          processIsolation="false"
          stopOnFailure="false"
-         syntaxCheck="false"
 >
     <filter>
-        <blacklist>
-            <directory suffix=".php">.</directory>
-        </blacklist>
-        <whitelist>
+        <whitelist addUncoveredFilesFromWhitelist="false">
             <directory suffix=".php">./src</directory>
             <exclude>
                 <file>./src/QuicksandServiceProvider.php</file>
@@ -23,7 +19,7 @@
     </filter>
     <testsuites>
         <testsuite name="Package Test Suite">
-            <directory suffix=".php">./tests/</directory>
+            <directory suffix="Test.php">./tests/</directory>
         </testsuite>
     </testsuites>
 </phpunit>
