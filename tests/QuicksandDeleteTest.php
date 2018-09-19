@@ -22,16 +22,16 @@ class QuicksandDeleteTest extends TestCase
         parent::setUp();
 
         $this->loadMigrationsFrom(__DIR__ . '/database/migrations');
-        $this->withFactories(__DIR__.'/database/factories');
+        $this->withFactories(__DIR__ . '/database/factories');
     }
 
     public function getEnvironmentSetUp($app)
     {
         $app['config']->set('database.default', 'testbench');
         $app['config']->set('database.connections.testbench', [
-            'driver'   => 'sqlite',
+            'driver' => 'sqlite',
             'database' => ':memory:',
-            'prefix'   => '',
+            'prefix' => '',
         ]);
         $app['config']->set('quicksand', $this->defaultQuicksandConfig);
     }

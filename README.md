@@ -17,7 +17,7 @@ Quicksand is an Artisan command that you can run in your scheduler daily.
 ## Installation
 
 1. Add Quicksand to your Composer file: `composer require tightenco/quicksand`
-2. Register the Quicksand Service provider in `config/app.php` (you can skip this step if your version of Laravel supports package auto-discovery):
+2. Register the Quicksand Service provider in `config/app.php` (you can skip this step if you're using Laravel 5.5 or higher due to package auto-discovery):
     
     ```php
         'providers' => [

@@ -11,6 +11,14 @@
         {
             "name": "Matt Stauffer",
             "email": "matt@tighten.co"
+        },
+        {
+            "name": "Jose Soto",
+            "email": "jose@tighten.co"
+        },
+        {
+            "name": "John Bonaccorsi",
+            "email": "john@tighten.co"
         }
     ],
     "require": {
