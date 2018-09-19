@@ -2,11 +2,11 @@
 
 namespace Tightenco\Quicksand;
 
-use Carbon\Carbon;
+use DateInterval;
+use DateTime;
 use Exception;
 use Illuminate\Config\Repository as Config;
 use Illuminate\Console\Command;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 
@@ -50,7 +50,7 @@ class DeleteOldSoftDeletes extends Command
             }
 
             if (! method_exists($modelName, 'bootSoftDeletes')) {
-                throw new Exception("$modelName does not have SoftDeletes enabled");
+                throw new Exception("{$modelName} does not have SoftDeletes enabled");
             }
 
             return $this->deleteOldSoftDeletesForModel($modelName, $modelConfig, $daysBeforeDeletion);
@@ -59,10 +59,10 @@ class DeleteOldSoftDeletes extends Command
 
     private function deleteOldSoftDeletesForModel($modelName, $modelConfig, $daysBeforeDeletion)
     {
-        $daysBeforeDeletion = empty($modelConfig['days']) ? $daysBeforeDeletion : $modelConfig['days'];
+        $daysBeforeDeletion = $modelConfig['days'] ?? $daysBeforeDeletion;
 
         $affectedRows = $modelName::onlyTrashed()
-            ->where('deleted_at', '<', Carbon::today()->subDays($daysBeforeDeletion))
+            ->where('deleted_at', '<', (new DateTime)->sub(new DateInterval("P{$daysBeforeDeletion}D"))->format('Y-m-d H:i:s'))
             ->forceDelete();
 
         return [$modelName => $affectedRows];
@@ -75,23 +75,22 @@ class DeleteOldSoftDeletes extends Command
         if (! $this->config->get('quicksand.log', false) || empty($preparedRows)) {
             return;
         }
-        
-        if (!! $this->config->get('quicksand.custom_log_file', false)) {
-            $logHandlers = Log::getMonolog()->getHandlers();
-            Log::getMonolog()->setHandlers([]);
-            Log::useFiles($this->config->get('quicksand.custom_log_file'));
 
+        if (! $this->config->has('logging.channels.quicksand')) {
+            $this->config->set([
+                'logging.channels.quicksand' => [
+                    'driver' => 'stack',
+                    'level' => 'info',
+                    'channels' => ['single'],
+                ],
+            ]);
         }
 
-        Log::info(sprintf(
+        Log::channel('quicksand')->info(sprintf(
             '%s force deleted these number of rows: %s',
             get_class($this),
             print_r($preparedRows, true)
         ));
-
-        if (!! $this->config->get('quicksand.custom_log_file', false)) {
-            Log::getMonolog()->setHandlers($logHandlers);
-        }
     }
 
     private function prepareForLogging($rawDeletedRows)
