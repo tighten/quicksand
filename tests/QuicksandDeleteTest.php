@@ -162,7 +162,7 @@ class QuicksandDeleteTest extends TestCase
         $this->deleteOldSoftDeletes();
 
         $this->assertEquals(0, Person::withTrashed()->count());
-        $this->assertSame('', $this->getLastLogMessage('quicksand'));
+        $this->assertNull($this->getLastLogMessage('quicksand'));
     }
 
     /** @test */
@@ -180,7 +180,7 @@ class QuicksandDeleteTest extends TestCase
 
         $this->deleteOldSoftDeletes();
 
-        $this->assertSame('', $this->getLastLogMessage('quicksand'));
+        $this->assertNull($this->getLastLogMessage('quicksand'));
     }
 
     private function deleteOldSoftDeletes()
@@ -193,7 +193,7 @@ class QuicksandDeleteTest extends TestCase
         return Log::channel($channel)
                 ->getLogger()
                 ->getHandlers()[0]
-                ->getRecords()[0]['message'] ?? '';
+                ->getRecords()[0]['message'] ?? null;
     }
 
     private function mockLogger()
