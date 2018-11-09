@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Log;
+use Models\GlobalScopedThing;
 use Models\Person;
 use Models\Place;
 use Models\Thing;
@@ -66,6 +67,23 @@ class QuicksandDeleteTest extends TestCase
         $this->deleteOldSoftDeletes();
 
         $this->assertEquals(15, Person::withTrashed()->count());
+    }
+
+     /** @test */
+    public function it_deletes_records_with_a_global_scope()
+    {
+        factory(GlobalScopedThing::class, 15)->states('global_scope_condition_met', 'deleted_old')->create();
+        factory(GlobalScopedThing::class, 15)->state('deleted_old')->create();
+
+        $this->setQuicksandConfig([
+            'models' => [
+                GlobalScopedThing::class,
+            ],
+        ]);
+
+        $this->deleteOldSoftDeletes();
+
+        $this->assertEquals(0, GlobalScopedThing::withTrashed()->count());
     }
 
     /** @test */
