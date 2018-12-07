@@ -83,7 +83,7 @@ class QuicksandDeleteTest extends TestCase
 
         $this->deleteOldSoftDeletes();
 
-        $this->assertEquals(0, GlobalScopedThing::withTrashed()->count());
+        $this->assertEquals(0, GlobalScopedThing::withoutGlobalScopes()->withTrashed()->count());
     }
 
     /** @test */

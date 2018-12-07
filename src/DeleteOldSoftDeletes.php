@@ -61,8 +61,7 @@ class DeleteOldSoftDeletes extends Command
     {
         $daysBeforeDeletion = $modelConfig['days'] ?? $daysBeforeDeletion;
 
-        $affectedRows = $modelName::withoutGlobalScopes()
-            ->onlyTrashed()
+        $affectedRows = $modelName::onlyTrashed()
             ->where('deleted_at', '<', (new DateTime)->sub(new DateInterval("P{$daysBeforeDeletion}D"))->format('Y-m-d H:i:s'))
             ->forceDelete();
 
