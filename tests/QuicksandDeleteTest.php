@@ -17,7 +17,7 @@ class QuicksandDeleteTest extends TestCase
         'models' => [],
     ];
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
