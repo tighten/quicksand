@@ -15,3 +15,4 @@ bootstrap/cache/
 .rocketeer/
 /_ide_helper.php
 .idea/
+composer.lock
