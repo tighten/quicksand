@@ -16,6 +16,7 @@ class QuicksandDeleteTest extends TestCase
         'days' => 30,
         'log' => false,
         'models' => [],
+        'pivot_tables' => [],
     ];
 
     public function setUp(): void
@@ -54,6 +55,32 @@ class QuicksandDeleteTest extends TestCase
     }
 
     /** @test */
+    public function it_deletes_old_records_for_pivot_tables()
+    {
+        $person = factory(Person::class)->create();
+        $thing = factory(Thing::class)->create();
+
+        $person->things()->attach($thing);
+
+        DB::table('person_thing')
+            ->where('person_id', $person->id)
+            ->where('thing_id', $thing->id)
+            ->update(['deleted_at' => now()->subDays(50)]);
+
+        $this->setQuicksandConfig([
+            'pivot_tables' => [
+                'person_thing'
+            ],
+        ]);
+
+        $this->assertEquals(1, DB::table('person_thing')->where('person_id', $person->id)->where('thing_id', $thing->id)->count());
+
+        $this->deleteOldSoftDeletes();
+
+        $this->assertEquals(0, DB::table('person_thing')->where('person_id', $person->id)->where('thing_id', $thing->id)->count());
+    }
+
+    /** @test */
     public function it_does_not_delete_newer_records()
     {
         factory(Person::class, 15)->state('deleted_recent')->create();
@@ -67,6 +94,71 @@ class QuicksandDeleteTest extends TestCase
         $this->deleteOldSoftDeletes();
 
         $this->assertEquals(15, Person::withTrashed()->count());
+    }
+
+    /** @test */
+    public function it_deletes_not_delete_newer_records_for_pivot_tables()
+    {
+        $person = factory(Person::class)->create();
+        $thing = factory(Thing::class)->create();
+
+        $person->things()->attach($thing);
+
+        DB::table('person_thing')
+            ->where('person_id', $person->id)
+            ->where('thing_id', $thing->id)
+            ->update(['deleted_at' => now()]);
+
+        $this->setQuicksandConfig([
+            'pivot_tables' => [
+                'person_thing'
+            ],
+        ]);
+
+        $this->assertEquals(1, DB::table('person_thing')->where('person_id', $person->id)->where('thing_id', $thing->id)->count());
+
+        $this->deleteOldSoftDeletes();
+
+        $this->assertEquals(1, DB::table('person_thing')->where('person_id', $person->id)->where('thing_id', $thing->id)->count());
+    }
+
+    /** @test */
+    public function it_can_combine_pivot_tables_with_models()
+    {
+        factory(Person::class, 15)->state('deleted_recent')->create();
+        factory(Thing::class, 2)->state('deleted_old')->create();
+
+        $person = factory(Person::class)->create();
+        $thing = factory(Thing::class)->create();
+
+        $person->things()->attach($thing);
+
+        DB::table('person_thing')
+            ->where('person_id', $person->id)
+            ->where('thing_id', $thing->id)
+            ->update(['deleted_at' => now()->subdays(50)]);
+
+        $this->setQuicksandConfig([
+            'models' => [
+                Person::class,
+                Thing::class,
+            ],
+            'pivot_tables' => [
+                'person_thing'
+            ],
+        ]);
+
+        $this->assertEquals(1, DB::table('person_thing')->where('person_id', $person->id)->where('thing_id', $thing->id)->count());
+
+        $this->assertEquals(16, Person::withTrashed()->count());
+        $this->assertEquals(3, Thing::withTrashed()->count());
+
+        $this->deleteOldSoftDeletes();
+
+        $this->assertEquals(0, DB::table('person_thing')->where('person_id', $person->id)->where('thing_id', $thing->id)->count());
+
+        $this->assertEquals(16, Person::withTrashed()->count());
+        $this->assertEquals(1, Thing::withTrashed()->count());
     }
 
      /** @test */
