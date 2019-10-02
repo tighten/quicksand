@@ -9,6 +9,8 @@ use Illuminate\Config\Repository as Config;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class DeleteOldSoftDeletes extends Command
 {
@@ -37,11 +39,22 @@ class DeleteOldSoftDeletes extends Command
     private function deleteOldSoftDeletes()
     {
         $models = collect($this->config->get('quicksand.models'));
+        $pivotTables = collect($this->config->get('quicksand.pivot_tables'));
         $daysBeforeDeletion = $this->config->get('quicksand.days');
 
         if (empty($daysBeforeDeletion)) {
             return new Collection;
         }
+
+        $deletedModels = $this->deleteModels($models);
+        $deletedPivots = $this->deletePivots($pivotTables);
+
+        return $deletedModels->merge($deletedPivots);
+    }
+
+    private function deleteModels($models)
+    {
+        $daysBeforeDeletion = $this->config->get('quicksand.days');
 
         return $models->map(function ($modelConfig, $modelName) use ($daysBeforeDeletion) {
             if (! is_array($modelConfig)) {
@@ -57,6 +70,24 @@ class DeleteOldSoftDeletes extends Command
         })->values();
     }
 
+    private function deletePivots($pivots)
+    {
+        $daysBeforeDeletion = $this->config->get('quicksand.days');
+
+        return $pivots->map(function ($pivotConfig, $pivotTable) use ($daysBeforeDeletion) {
+            if (! is_array($pivotConfig)) {
+                $pivotTable = $pivotConfig;
+                $pivotConfig = [];
+            }
+
+            if (! Schema::hasColumn($pivotTable, 'deleted_at')) {
+                throw new Exception("{$pivotTable} does not have a 'deleted_at' column");
+            }
+
+            return $this->deleteOldSoftDeletesForPivotTable($pivotTable, $pivotConfig, $daysBeforeDeletion);
+        })->values();
+    }
+
     private function deleteOldSoftDeletesForModel($modelName, $modelConfig, $daysBeforeDeletion)
     {
         $daysBeforeDeletion = $modelConfig['days'] ?? $daysBeforeDeletion;
@@ -66,6 +97,16 @@ class DeleteOldSoftDeletes extends Command
             ->forceDelete();
 
         return [$modelName => $affectedRows];
+    }
+
+    private function deleteOldSoftDeletesForPivotTable($table, $tableConfig, $daysBeforeDeletion)
+    {
+        $daysBeforeDeletion = $tableConfig['days'] ?? $daysBeforeDeletion;
+
+        $affectedRows = DB::table($table)->where('deleted_at', '<', (new DateTime)->sub(new DateInterval("P{$daysBeforeDeletion}D"))->format('Y-m-d H:i:s'))
+            ->delete();
+
+        return [$table => $affectedRows];
     }
 
     private function logAffectedRows(Collection $deletedRows)
