@@ -13,5 +13,13 @@ return [
         // \App\User::class => [
         //     'days' => '30' // per-model days setting override
         // ]
-    ]
+    ],
+
+    // List of pivot tables to run Quicksand on
+    'pivot_tables' => [
+        // 'project_user',
+        // 'project_user' => [
+        //      'days'  => '30' // per-table days setting override
+        // ]
+    ],
 ];
