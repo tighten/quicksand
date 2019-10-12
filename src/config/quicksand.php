@@ -4,22 +4,21 @@ return [
     // Days before deleting soft deleted content
     'days' => 30,
 
-    // Whether to log the number of soft deleted records per model
+    // Whether to log the number of soft deleted records
     'log' => false,
 
-    // List of models to run Quicksand on
-    'models' => [
+    // List of models and/or pivot tables to run Quicksand on
+    'deletables' => [
         // \App\Example::class,
-        // \App\User::class => [
-        //     'days' => '30' // per-model days setting override
-        // ]
-    ],
 
-    // List of pivot tables to run Quicksand on
-    'pivot_tables' => [
-        // 'project_user',
-        // 'project_user' => [
-        //      'days'  => '30' // per-table days setting override
+        // App\Example::class => [
+        //     'days' => '30' // override default 'days'
+        // ]
+
+        // 'example_pivot', 
+
+        // 'example_pivot' => 
+        //     'days' => '30' // override default 'days'
         // ]
     ],
 ];

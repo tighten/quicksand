@@ -38,75 +38,53 @@ class DeleteOldSoftDeletes extends Command
 
     private function deleteOldSoftDeletes()
     {
-        $models = collect($this->config->get('quicksand.models'));
-        $pivotTables = collect($this->config->get('quicksand.pivot_tables'));
-        $daysBeforeDeletion = $this->config->get('quicksand.days');
-
-        if (empty($daysBeforeDeletion)) {
+        if (empty($this->config->get('quicksand.days'))) {
             return new Collection;
         }
 
-        $deletedModels = $this->deleteModels($models);
-        $deletedPivots = $this->deletePivots($pivotTables);
+        $deletables = collect($this->config->get('quicksand.deletables'));
 
-        return $deletedModels->merge($deletedPivots);
-    }
+        return $deletables->map(function ($itemConfig, $itemName) {
+            $item = $this->getItemProperties($itemName, $itemConfig);
 
-    private function deleteModels($models)
-    {
-        $daysBeforeDeletion = $this->config->get('quicksand.days');
-
-        return $models->map(function ($modelConfig, $modelName) use ($daysBeforeDeletion) {
-            if (! is_array($modelConfig)) {
-                $modelName = $modelConfig;
-                $modelConfig = [];
+            if (! Schema::hasColumn($item['table'], 'deleted_at')) {
+                throw new Exception("{$item['table']} does not have a 'deleted_at' column");
             }
 
-            if (! method_exists($modelName, 'bootSoftDeletes')) {
-                throw new Exception("{$modelName} does not have SoftDeletes enabled");
-            }
+            $affectedRows = DB::table($item['table'])
+                ->where('deleted_at', '<', (new DateTime)->sub(new DateInterval("P{$item['daysBeforeDeletion']}D"))->format('Y-m-d H:i:s'))
+                ->delete();
 
-            return $this->deleteOldSoftDeletesForModel($modelName, $modelConfig, $daysBeforeDeletion);
-        })->values();
+            return [$item['name'] => $affectedRows];
+        });
     }
 
-    private function deletePivots($pivots)
+    private function getItemProperties($itemName, $itemConfig)
     {
-        $daysBeforeDeletion = $this->config->get('quicksand.days');
+        if (! is_array($itemConfig)) {
+            $itemName = $itemConfig;
+            $itemConfig = [];
+        }
 
-        return $pivots->map(function ($pivotConfig, $pivotTable) use ($daysBeforeDeletion) {
-            if (! is_array($pivotConfig)) {
-                $pivotTable = $pivotConfig;
-                $pivotConfig = [];
-            }
-
-            if (! Schema::hasColumn($pivotTable, 'deleted_at')) {
-                throw new Exception("{$pivotTable} does not have a 'deleted_at' column");
-            }
-
-            return $this->deleteOldSoftDeletesForPivotTable($pivotTable, $pivotConfig, $daysBeforeDeletion);
-        })->values();
+        return [
+            'name' => $itemName,
+            'table' => $this->getTableName($itemName),
+            'daysBeforeDeletion' => $this->getDaysBeforeDeletion($itemConfig),
+        ];
     }
 
-    private function deleteOldSoftDeletesForModel($modelName, $modelConfig, $daysBeforeDeletion)
+    private function getTableName($itemName)
     {
-        $daysBeforeDeletion = $modelConfig['days'] ?? $daysBeforeDeletion;
+        if (is_subclass_of($itemName, 'Illuminate\Database\Eloquent\Model')) {
+            return resolve($itemName)->getTable();
+        }
 
-        $affectedRows = $modelName::onlyTrashed()
-            ->where('deleted_at', '<', (new DateTime)->sub(new DateInterval("P{$daysBeforeDeletion}D"))->format('Y-m-d H:i:s'))
-            ->forceDelete();
-
-        return [$modelName => $affectedRows];
+        return $itemName;
     }
 
-    private function deleteOldSoftDeletesForPivotTable($table, $tableConfig, $daysBeforeDeletion)
+    private function getDaysBeforeDeletion($itemConfig)
     {
-        $daysBeforeDeletion = $tableConfig['days'] ?? $daysBeforeDeletion;
-
-        $affectedRows = DB::table($table)->where('deleted_at', '<', (new DateTime)->sub(new DateInterval("P{$daysBeforeDeletion}D"))->format('Y-m-d H:i:s'))
-            ->delete();
-
-        return [$table => $affectedRows];
+        return $itemConfig['days'] ?? $this->config->get('quicksand.days');
     }
 
     private function logAffectedRows(Collection $deletedRows)
