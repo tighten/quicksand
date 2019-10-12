@@ -246,7 +246,9 @@ class QuicksandDeleteTest extends TestCase
         $this->setQuicksandConfig([
             'deletables' => [
                 Person::class,
-                Thing::class,
+                Thing::class => [
+                    'days' => '20',
+                ],
             ],
         ]);
 
