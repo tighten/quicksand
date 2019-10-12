@@ -96,7 +96,25 @@ class QuicksandDeleteTest extends TestCase
     }
 
     /** @test */
-    public function it_deletes_not_delete_newer_records_for_pivot_tables()
+    public function it_deletes_newer_records_when_deletion_period_is_overriden()
+    {
+        factory(Person::class, 15)->state('deleted_recent')->create();
+
+        $this->setQuicksandConfig([
+            'deletables' => [
+                Person::class => [
+                    'days' => '0'
+                ],
+            ],
+        ]);
+
+        $this->deleteOldSoftDeletes();
+
+        $this->assertEquals(0, Person::withTrashed()->count());
+    }
+
+    /** @test */
+    public function it_does_not_delete_newer_records_for_pivot_tables()
     {
         $person = factory(Person::class)->create();
         $thing = factory(Thing::class)->create();
@@ -111,6 +129,34 @@ class QuicksandDeleteTest extends TestCase
         $this->setQuicksandConfig([
             'deletables' => [
                 'person_thing'
+            ],
+        ]);
+
+        $this->assertEquals(1, DB::table('person_thing')->where('person_id', $person->id)->where('thing_id', $thing->id)->count());
+
+        $this->deleteOldSoftDeletes();
+
+        $this->assertEquals(1, DB::table('person_thing')->where('person_id', $person->id)->where('thing_id', $thing->id)->count());
+    }
+
+    /** @test */
+    public function it_deletes_newer_records_for_pivot_tables_when_deletion_period_is_overriden()
+    {
+        $person = factory(Person::class)->create();
+        $thing = factory(Thing::class)->create();
+
+        $person->things()->attach($thing);
+
+        DB::table('person_thing')
+            ->where('person_id', $person->id)
+            ->where('thing_id', $thing->id)
+            ->update(['deleted_at' => now()]);
+
+        $this->setQuicksandConfig([
+            'deletables' => [
+                'person_thing' => [
+                    'days' => '0',
+                ]
             ],
         ]);
 
