@@ -15,8 +15,7 @@ class QuicksandDeleteTest extends TestCase
     public $defaultQuicksandConfig = [
         'days' => 30,
         'log' => false,
-        'models' => [],
-        'pivot_tables' => [],
+        'deletables' => [],
     ];
 
     public function setUp(): void
@@ -44,7 +43,7 @@ class QuicksandDeleteTest extends TestCase
         factory(Person::class, 15)->state('deleted_old')->create();
 
         $this->setQuicksandConfig([
-            'models' => [
+            'deletables' => [
                 Person::class,
             ],
         ]);
@@ -68,7 +67,7 @@ class QuicksandDeleteTest extends TestCase
             ->update(['deleted_at' => now()->subDays(50)]);
 
         $this->setQuicksandConfig([
-            'pivot_tables' => [
+            'deletables' => [
                 'person_thing'
             ],
         ]);
@@ -86,7 +85,7 @@ class QuicksandDeleteTest extends TestCase
         factory(Person::class, 15)->state('deleted_recent')->create();
 
         $this->setQuicksandConfig([
-            'models' => [
+            'deletables' => [
                 Person::class,
             ],
         ]);
@@ -110,7 +109,7 @@ class QuicksandDeleteTest extends TestCase
             ->update(['deleted_at' => now()]);
 
         $this->setQuicksandConfig([
-            'pivot_tables' => [
+            'deletables' => [
                 'person_thing'
             ],
         ]);
@@ -139,11 +138,9 @@ class QuicksandDeleteTest extends TestCase
             ->update(['deleted_at' => now()->subdays(50)]);
 
         $this->setQuicksandConfig([
-            'models' => [
+            'deletables' => [
                 Person::class,
                 Thing::class,
-            ],
-            'pivot_tables' => [
                 'person_thing'
             ],
         ]);
@@ -168,7 +165,7 @@ class QuicksandDeleteTest extends TestCase
         factory(GlobalScopedThing::class, 15)->state('deleted_old')->create();
 
         $this->setQuicksandConfig([
-            'models' => [
+            'deletables' => [
                 GlobalScopedThing::class,
             ],
         ]);
@@ -182,7 +179,7 @@ class QuicksandDeleteTest extends TestCase
     public function it_throws_exception_if_soft_deletes_are_not_enabled_on_model()
     {
         $this->setQuicksandConfig([
-            'models' => [
+            'deletables' => [
                 Place::class,
             ],
         ]);
@@ -201,7 +198,7 @@ class QuicksandDeleteTest extends TestCase
     public function it_will_delete_rows_from_multiple_tables_if_config_is_set_for_it()
     {
         $this->setQuicksandConfig([
-            'models' => [
+            'deletables' => [
                 Person::class,
                 Thing::class,
             ],
@@ -221,7 +218,7 @@ class QuicksandDeleteTest extends TestCase
     {
         $this->setQuicksandConfig([
             'days' => '',
-            'models' => [
+            'deletables' => [
                 Person::class,
             ],
         ]);
@@ -239,7 +236,7 @@ class QuicksandDeleteTest extends TestCase
         $this->mockLogger();
         $this->setQuicksandConfig([
             'log' => true,
-            'models' => [
+            'deletables' => [
                 Person::class,
             ],
         ]);
@@ -262,7 +259,7 @@ class QuicksandDeleteTest extends TestCase
         $this->mockLogger();
         $this->setQuicksandConfig([
             'log' => false,
-            'models' => [
+            'deletables' => [
                 Person::class,
             ],
         ]);
@@ -281,7 +278,7 @@ class QuicksandDeleteTest extends TestCase
         $this->mockLogger();
         $this->setQuicksandConfig([
             'log' => true,
-            'models' => [
+            'deletables' => [
                 Person::class,
             ],
         ]);
