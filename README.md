@@ -4,7 +4,7 @@
 
 # Quicksand
 
-Schedule a force delete of your soft deleted Eloquent models after they've been soft deleted for a given period of time.
+Schedule a force delete of your soft deleted Eloquent models or pivot tables after they've been soft deleted for a given period of time.
 
 Quicksand is an Artisan command that you can run in your scheduler daily.
 
