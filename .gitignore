@@ -1,5 +1,6 @@
 vendor/
 node_modules/
+.phpunit.result.cache
 
 # Laravel 4 specific
 bootstrap/compiled.php
