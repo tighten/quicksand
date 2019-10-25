@@ -38,6 +38,22 @@ class QuicksandDeleteTest extends TestCase
     }
 
     /** @test */
+    public function it_deletes_old_records_using_the_older_models_key_config()
+    {
+        factory(Person::class, 15)->state('deleted_old')->create();
+
+        $this->app['config']->set('quicksand', [
+          'models' => [ Person::class ],
+          'days' => 30,
+          'log' => false,
+        ]);
+
+        $this->deleteOldSoftDeletes();
+
+        $this->assertEquals(0, Person::withTrashed()->count());
+    }
+
+    /** @test */
     public function it_deletes_old_records()
     {
         factory(Person::class, 15)->state('deleted_old')->create();
