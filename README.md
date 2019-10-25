@@ -87,6 +87,12 @@ See also the list of [contributors](https://github.com/tightenco/quicksand/graph
 
 This package is developed and maintained by [Tighten](https://tighten.co).
 
+## Testing
+You can test this package by running
+```
+composer test
+```
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE) file for details
