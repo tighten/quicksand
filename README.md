@@ -29,7 +29,7 @@ Quicksand is an Artisan command that you can run in your scheduler daily.
 4. Edit your config. Define which classes and/or pivot tables you'd like to have Quicksand clean up for you, how many days Quicksand should wait to clean up, and whether or not the results should be logged. The default `'days'` until cleaning up is overridable by specifying a `'days'` key when registering a model or pivot table:
 
     1. _Note: Quicksand will disregard any global scopes applied to models when deleting._
-
+    2. _Note: Prior to version 2.3 the `deletables` configuration key was named `models` and did not support pivot tables._
 
     ```php
     'days' => 30,
