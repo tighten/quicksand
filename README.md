@@ -4,7 +4,7 @@
 
 # Quicksand
 
-Schedule a force delete of your soft deleted Eloquent models after they've been soft deleted for a given period of time.
+Schedule a force delete of your soft deleted Eloquent models or pivot tables after they've been soft deleted for a given period of time.
 
 Quicksand is an Artisan command that you can run in your scheduler daily.
 
@@ -26,7 +26,23 @@ Quicksand is an Artisan command that you can run in your scheduler daily.
             Tightenco\Quicksand\QuicksandServiceProvider::class,
     ```
 3. Publish your config: `php artisan vendor:publish --provider="Tightenco\Quicksand\QuicksandServiceProvider"`
-4. Edit your config. Define which classes you'd like to have Quicksand clean up for you, how many days Quicksand should wait to clean up, and whether or not the results should be logged.
+4. Edit your config. Define which classes and/or pivot tables you'd like to have Quicksand clean up for you, how many days Quicksand should wait to clean up, and whether or not the results should be logged. The default `'days'` until cleaning up is overridable by specifying a `'date'` key when registering a model or pivot table:
+
+```php
+'days' => 30,
+
+'deletables' => [
+    App\Default::class,
+    App\CleanEveryTwentyDays::class => [
+        'days'  => 20 // override default 'days'
+    ],
+    'pivot_table',
+    'example_pivot' => [
+        'days'  => 20 // override default 'days'
+    ]
+]
+```
+
     1. _Note: Quicksand will disregard any global scopes applied to models when deleting._
 5. Schedule the command in `app/Console/Kernel.php`:
 

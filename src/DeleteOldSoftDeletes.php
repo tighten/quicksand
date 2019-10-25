@@ -9,6 +9,8 @@ use Illuminate\Config\Repository as Config;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class DeleteOldSoftDeletes extends Command
 {
@@ -36,36 +38,53 @@ class DeleteOldSoftDeletes extends Command
 
     private function deleteOldSoftDeletes()
     {
-        $models = collect($this->config->get('quicksand.models'));
-        $daysBeforeDeletion = $this->config->get('quicksand.days');
-
-        if (empty($daysBeforeDeletion)) {
+        if (empty($this->config->get('quicksand.days'))) {
             return new Collection;
         }
 
-        return $models->map(function ($modelConfig, $modelName) use ($daysBeforeDeletion) {
-            if (! is_array($modelConfig)) {
-                $modelName = $modelConfig;
-                $modelConfig = [];
+        $deletables = collect($this->config->get('quicksand.deletables'));
+
+        return $deletables->map(function ($itemConfig, $itemName) {
+            $item = $this->getItemProperties($itemName, $itemConfig);
+
+            if (! Schema::hasColumn($item['table'], 'deleted_at')) {
+                throw new Exception("{$item['table']} does not have a 'deleted_at' column");
             }
 
-            if (! method_exists($modelName, 'bootSoftDeletes')) {
-                throw new Exception("{$modelName} does not have SoftDeletes enabled");
-            }
+            $affectedRows = DB::table($item['table'])
+                ->where('deleted_at', '<', (new DateTime)->sub(new DateInterval("P{$item['daysBeforeDeletion']}D"))->format('Y-m-d H:i:s'))
+                ->delete();
 
-            return $this->deleteOldSoftDeletesForModel($modelName, $modelConfig, $daysBeforeDeletion);
-        })->values();
+            return [$item['name'] => $affectedRows];
+        });
     }
 
-    private function deleteOldSoftDeletesForModel($modelName, $modelConfig, $daysBeforeDeletion)
+    private function getItemProperties($itemName, $itemConfig)
     {
-        $daysBeforeDeletion = $modelConfig['days'] ?? $daysBeforeDeletion;
+        if (! is_array($itemConfig)) {
+            $itemName = $itemConfig;
+            $itemConfig = [];
+        }
 
-        $affectedRows = $modelName::onlyTrashed()
-            ->where('deleted_at', '<', (new DateTime)->sub(new DateInterval("P{$daysBeforeDeletion}D"))->format('Y-m-d H:i:s'))
-            ->forceDelete();
+        return [
+            'name' => $itemName,
+            'table' => $this->getTableName($itemName),
+            'daysBeforeDeletion' => $this->getDaysBeforeDeletion($itemConfig),
+        ];
+    }
 
-        return [$modelName => $affectedRows];
+    private function getTableName($itemName)
+    {
+        if (is_subclass_of($itemName, 'Illuminate\Database\Eloquent\Model')) {
+            return resolve($itemName)->getTable();
+        }
+
+        return $itemName;
+    }
+
+    private function getDaysBeforeDeletion($itemConfig)
+    {
+        return $itemConfig['days'] ?? $this->config->get('quicksand.days');
     }
 
     private function logAffectedRows(Collection $deletedRows)

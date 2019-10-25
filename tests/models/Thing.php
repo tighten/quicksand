@@ -10,4 +10,10 @@ class Thing extends Model
     use SoftDeletes;
 
     protected $fillable = ['name'];
+
+    public function people()
+    {
+    	return $this->belongsToMany(Person::class)
+    		->withPivot('deleted_at');
+    }
 }

@@ -15,7 +15,7 @@ class QuicksandDeleteTest extends TestCase
     public $defaultQuicksandConfig = [
         'days' => 30,
         'log' => false,
-        'models' => [],
+        'deletables' => [],
     ];
 
     public function setUp(): void
@@ -43,7 +43,7 @@ class QuicksandDeleteTest extends TestCase
         factory(Person::class, 15)->state('deleted_old')->create();
 
         $this->setQuicksandConfig([
-            'models' => [
+            'deletables' => [
                 Person::class,
             ],
         ]);
@@ -54,12 +54,38 @@ class QuicksandDeleteTest extends TestCase
     }
 
     /** @test */
+    public function it_deletes_old_records_for_pivot_tables()
+    {
+        $person = factory(Person::class)->create();
+        $thing = factory(Thing::class)->create();
+
+        $person->things()->attach($thing);
+
+        DB::table('person_thing')
+            ->where('person_id', $person->id)
+            ->where('thing_id', $thing->id)
+            ->update(['deleted_at' => now()->subDays(50)]);
+
+        $this->setQuicksandConfig([
+            'deletables' => [
+                'person_thing'
+            ],
+        ]);
+
+        $this->assertEquals(1, DB::table('person_thing')->where('person_id', $person->id)->where('thing_id', $thing->id)->count());
+
+        $this->deleteOldSoftDeletes();
+
+        $this->assertEquals(0, DB::table('person_thing')->where('person_id', $person->id)->where('thing_id', $thing->id)->count());
+    }
+
+    /** @test */
     public function it_does_not_delete_newer_records()
     {
         factory(Person::class, 15)->state('deleted_recent')->create();
 
         $this->setQuicksandConfig([
-            'models' => [
+            'deletables' => [
                 Person::class,
             ],
         ]);
@@ -69,6 +95,115 @@ class QuicksandDeleteTest extends TestCase
         $this->assertEquals(15, Person::withTrashed()->count());
     }
 
+    /** @test */
+    public function it_deletes_newer_records_when_deletion_period_is_overriden()
+    {
+        factory(Person::class, 15)->state('deleted_recent')->create();
+
+        $this->setQuicksandConfig([
+            'deletables' => [
+                Person::class => [
+                    'days' => '0'
+                ],
+            ],
+        ]);
+
+        $this->deleteOldSoftDeletes();
+
+        $this->assertEquals(0, Person::withTrashed()->count());
+    }
+
+    /** @test */
+    public function it_does_not_delete_newer_records_for_pivot_tables()
+    {
+        $person = factory(Person::class)->create();
+        $thing = factory(Thing::class)->create();
+
+        $person->things()->attach($thing);
+
+        DB::table('person_thing')
+            ->where('person_id', $person->id)
+            ->where('thing_id', $thing->id)
+            ->update(['deleted_at' => now()]);
+
+        $this->setQuicksandConfig([
+            'deletables' => [
+                'person_thing'
+            ],
+        ]);
+
+        $this->assertEquals(1, DB::table('person_thing')->where('person_id', $person->id)->where('thing_id', $thing->id)->count());
+
+        $this->deleteOldSoftDeletes();
+
+        $this->assertEquals(1, DB::table('person_thing')->where('person_id', $person->id)->where('thing_id', $thing->id)->count());
+    }
+
+    /** @test */
+    public function it_deletes_newer_records_for_pivot_tables_when_deletion_period_is_overriden()
+    {
+        $person = factory(Person::class)->create();
+        $thing = factory(Thing::class)->create();
+
+        $person->things()->attach($thing);
+
+        DB::table('person_thing')
+            ->where('person_id', $person->id)
+            ->where('thing_id', $thing->id)
+            ->update(['deleted_at' => now()]);
+
+        $this->setQuicksandConfig([
+            'deletables' => [
+                'person_thing' => [
+                    'days' => '0',
+                ]
+            ],
+        ]);
+
+        $this->assertEquals(1, DB::table('person_thing')->where('person_id', $person->id)->where('thing_id', $thing->id)->count());
+
+        $this->deleteOldSoftDeletes();
+
+        $this->assertEquals(1, DB::table('person_thing')->where('person_id', $person->id)->where('thing_id', $thing->id)->count());
+    }
+
+    /** @test */
+    public function it_can_combine_pivot_tables_with_models()
+    {
+        factory(Person::class, 15)->state('deleted_recent')->create();
+        factory(Thing::class, 2)->state('deleted_old')->create();
+
+        $person = factory(Person::class)->create();
+        $thing = factory(Thing::class)->create();
+
+        $person->things()->attach($thing);
+
+        DB::table('person_thing')
+            ->where('person_id', $person->id)
+            ->where('thing_id', $thing->id)
+            ->update(['deleted_at' => now()->subdays(50)]);
+
+        $this->setQuicksandConfig([
+            'deletables' => [
+                Person::class,
+                Thing::class,
+                'person_thing'
+            ],
+        ]);
+
+        $this->assertEquals(1, DB::table('person_thing')->where('person_id', $person->id)->where('thing_id', $thing->id)->count());
+
+        $this->assertEquals(16, Person::withTrashed()->count());
+        $this->assertEquals(3, Thing::withTrashed()->count());
+
+        $this->deleteOldSoftDeletes();
+
+        $this->assertEquals(0, DB::table('person_thing')->where('person_id', $person->id)->where('thing_id', $thing->id)->count());
+
+        $this->assertEquals(16, Person::withTrashed()->count());
+        $this->assertEquals(1, Thing::withTrashed()->count());
+    }
+
      /** @test */
     public function it_deletes_records_with_a_global_scope()
     {
@@ -76,7 +211,7 @@ class QuicksandDeleteTest extends TestCase
         factory(GlobalScopedThing::class, 15)->state('deleted_old')->create();
 
         $this->setQuicksandConfig([
-            'models' => [
+            'deletables' => [
                 GlobalScopedThing::class,
             ],
         ]);
@@ -90,7 +225,7 @@ class QuicksandDeleteTest extends TestCase
     public function it_throws_exception_if_soft_deletes_are_not_enabled_on_model()
     {
         $this->setQuicksandConfig([
-            'models' => [
+            'deletables' => [
                 Place::class,
             ],
         ]);
@@ -109,9 +244,11 @@ class QuicksandDeleteTest extends TestCase
     public function it_will_delete_rows_from_multiple_tables_if_config_is_set_for_it()
     {
         $this->setQuicksandConfig([
-            'models' => [
+            'deletables' => [
                 Person::class,
-                Thing::class,
+                Thing::class => [
+                    'days' => '20',
+                ],
             ],
         ]);
 
@@ -129,7 +266,7 @@ class QuicksandDeleteTest extends TestCase
     {
         $this->setQuicksandConfig([
             'days' => '',
-            'models' => [
+            'deletables' => [
                 Person::class,
             ],
         ]);
@@ -147,7 +284,7 @@ class QuicksandDeleteTest extends TestCase
         $this->mockLogger();
         $this->setQuicksandConfig([
             'log' => true,
-            'models' => [
+            'deletables' => [
                 Person::class,
             ],
         ]);
@@ -170,7 +307,7 @@ class QuicksandDeleteTest extends TestCase
         $this->mockLogger();
         $this->setQuicksandConfig([
             'log' => false,
-            'models' => [
+            'deletables' => [
                 Person::class,
             ],
         ]);
@@ -189,7 +326,7 @@ class QuicksandDeleteTest extends TestCase
         $this->mockLogger();
         $this->setQuicksandConfig([
             'log' => true,
-            'models' => [
+            'deletables' => [
                 Person::class,
             ],
         ]);
