@@ -41,8 +41,11 @@ class DeleteOldSoftDeletes extends Command
         if (empty($this->config->get('quicksand.days'))) {
             return new Collection;
         }
+         
+        $config = $this->config->get('quicksand.deletables') 
+          ?? $this->config->get('quicksand.models');
 
-        $deletables = collect($this->config->get('quicksand.deletables'));
+        $deletables = collect($config);
 
         return $deletables->map(function ($itemConfig, $itemName) {
             $item = $this->getItemProperties($itemName, $itemConfig);
