@@ -1,4 +1,4 @@
-![](https://raw.githubusercontent.com/tightenco/quicksand/master/quicksand-logo.png)
+![Quicksand logo](https://raw.githubusercontent.com/tightenco/quicksand/master/quicksand-banner.png)
 
 [ ![Codeship Status for tightenco/quicksand](https://app.codeship.com/projects/a9e67790-46e9-0134-a8cb-3a2b7d7aa9d2/status?branch=master)](https://app.codeship.com/projects/169050)
 
