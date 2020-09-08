@@ -52,7 +52,5 @@
                 "Tightenco\\Quicksand\\QuicksandServiceProvider"
             ]
         }
-    },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+    }
 }
