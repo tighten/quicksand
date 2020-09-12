@@ -1,4 +1,4 @@
-![Quicksand logo](https://raw.githubusercontent.com/tightenco/quicksand/master/quicksand-banner.png)
+![Quicksand logo](https://raw.githubusercontent.com/tighten/quicksand/master/quicksand-banner.png)
 
 [ ![Codeship Status for tightenco/quicksand](https://app.codeship.com/projects/a9e67790-46e9-0134-a8cb-3a2b7d7aa9d2/status?branch=master)](https://app.codeship.com/projects/169050)
 
@@ -76,14 +76,14 @@ By default, Quicksand will log to the standard `laravel.log` file.
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/tightenco/quicksand/tags). 
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/tighten/quicksand/tags). 
 
 ## Authors
 
 * **Benson Lee** - [besologic](https://github.com/besologic)
 * **Matt Stauffer** - [mattstauffer](https://github.com/mattstauffer)
 
-See also the list of [contributors](https://github.com/tightenco/quicksand/graphs/contributors) who participated in this project.
+See also the list of [contributors](https://github.com/tighten/quicksand/graphs/contributors) who participated in this project.
 
 This package is developed and maintained by [Tighten](https://tighten.co).
 
