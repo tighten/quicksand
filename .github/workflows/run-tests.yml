@@ -1,13 +1,16 @@
-name: run-tests
+name: Tests
 
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+    branches: [main]
 
 jobs:
   test:
-
+    name: PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }} - ${{ matrix.dependency-version }}
     runs-on: ubuntu-latest
+
     strategy:
-      fail-fast: false
       matrix:
         php: [7.4, 7.3]
         laravel: [8.*, 7.*, 6.*]
@@ -20,19 +23,17 @@ jobs:
           - laravel: 6.*
             testbench: 4.*
 
-    name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.dependency-version }}
-
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v2
 
       - name: Cache dependencies
         uses: actions/cache@v2
         with:
           path: ~/.composer/cache/files
-          key: dependencies-laravel-${{ matrix.laravel }}-php-${{ matrix.php }}-composer-${{ hashFiles('composer.json') }}
+          key: php-${{ matrix.php }}-laravel-${{ matrix.laravel }}-composer-${{ hashFiles('composer.lock') }}
 
-      - name: Setup PHP
+      - name: Set up PHP
         uses: shivammathur/setup-php@v1
         with:
           php-version: ${{ matrix.php }}
@@ -44,5 +45,5 @@ jobs:
           composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
           composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction --no-suggest
 
-      - name: Execute tests
-        run: vendor/bin/phpunit
+      - name: Run tests
+        run: vendor/bin/phpunit --testdox --colors=always
