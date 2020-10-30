@@ -1,8 +1,8 @@
 ![Quicksand logo](https://raw.githubusercontent.com/tighten/quicksand/main/quicksand-banner.png)
 
-[ ![Codeship Status for tightenco/quicksand](https://app.codeship.com/projects/a9e67790-46e9-0134-a8cb-3a2b7d7aa9d2/status?branch=master)](https://app.codeship.com/projects/169050)
-
 # Quicksand
+
+![Tests](https://github.com/tighten/quicksand/workflows/Tests/badge.svg)
 
 Schedule a force delete of your soft deleted Eloquent models or pivot tables after they've been soft deleted for a given period of time.
 
@@ -18,7 +18,7 @@ Quicksand is an Artisan command that you can run in your scheduler daily.
 
 1. Add Quicksand to your Composer file: `composer require tightenco/quicksand`
 2. Register the Quicksand Service provider in `config/app.php` (you can skip this step if you're using Laravel 5.5 or higher due to package auto-discovery):
-    
+
     ```php
     'providers' => [
         ...
@@ -76,7 +76,7 @@ By default, Quicksand will log to the standard `laravel.log` file.
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/tighten/quicksand/tags). 
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/tighten/quicksand/tags).
 
 ## Authors
 
