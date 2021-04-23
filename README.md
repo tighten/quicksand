@@ -16,16 +16,16 @@ Quicksand is an Artisan command that you can run in your scheduler daily.
 
 ## Installation
 
-1. Add Quicksand to your Composer file: `composer require tightenco/quicksand`
+1. Add Quicksand to your Composer file: `composer require tighten/quicksand`
 2. Register the Quicksand Service provider in `config/app.php` (you can skip this step if you're using Laravel 5.5 or higher due to package auto-discovery):
 
     ```php
     'providers' => [
         ...
 
-        Tightenco\Quicksand\QuicksandServiceProvider::class,
+        Tighten\Quicksand\QuicksandServiceProvider::class,
     ```
-3. Publish your config: `php artisan vendor:publish --provider="Tightenco\Quicksand\QuicksandServiceProvider"`
+3. Publish your config: `php artisan vendor:publish --provider="Tighten\Quicksand\QuicksandServiceProvider"`
 4. Edit your config. Define which classes and/or pivot tables you'd like to have Quicksand clean up for you, how many days Quicksand should wait to clean up, and whether or not the results should be logged. The default `'days'` until cleaning up is overridable by specifying a `'days'` key when registering a model or pivot table:
 
     1. _Note: Quicksand will disregard any global scopes applied to models when deleting._

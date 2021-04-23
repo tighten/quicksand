@@ -8,7 +8,7 @@ use Models\Thing;
 use Monolog\Logger;
 use Monolog\Handler\TestHandler;
 use Orchestra\Testbench\TestCase;
-use Tightenco\Quicksand\DeleteOldSoftDeletes;
+use Tighten\Quicksand\DeleteOldSoftDeletes;
 
 class QuicksandDeleteTest extends TestCase
 {
@@ -310,7 +310,7 @@ class QuicksandDeleteTest extends TestCase
         $this->deleteOldSoftDeletes();
 
         $expectedLogOutput = sprintf(
-            'Tightenco\Quicksand\DeleteOldSoftDeletes force deleted these number of rows: %s',
+            'Tighten\Quicksand\DeleteOldSoftDeletes force deleted these number of rows: %s',
             print_r(['Models\Person' => 1], true)
         );
 
