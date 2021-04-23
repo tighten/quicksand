@@ -1,5 +1,5 @@
 {
-    "name": "tighten/quicksand",
+    "name": "tightenco/quicksand",
     "description": "Easily schedule regular cleanup of old soft-deleted Eloquent data.",
     "homepage": "https://github.com/tighten/quicksand",
     "license": "MIT",
