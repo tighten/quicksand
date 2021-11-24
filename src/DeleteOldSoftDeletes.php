@@ -50,11 +50,11 @@ class DeleteOldSoftDeletes extends Command
         return $deletables->map(function ($itemConfig, $itemName) {
             $item = $this->getItemProperties($itemName, $itemConfig);
 
-            if (! Schema::hasColumn($item['table'], 'deleted_at')) {
+            if (! Schema::connection($item['connection'])->hasColumn($item['table'], 'deleted_at')) {
                 throw new Exception("{$item['table']} does not have a 'deleted_at' column");
             }
 
-            $affectedRows = DB::table($item['table'])
+            $affectedRows = DB::connection($item['connection'])->table($item['table'])
                 ->where('deleted_at', '<', (new DateTime)->sub(new DateInterval("P{$item['daysBeforeDeletion']}D"))->format('Y-m-d H:i:s'))
                 ->delete();
 
@@ -72,6 +72,7 @@ class DeleteOldSoftDeletes extends Command
         return [
             'name' => $itemName,
             'table' => $this->getTableName($itemName),
+            'connection' => $this->getConnectionName($itemName),
             'daysBeforeDeletion' => $this->getDaysBeforeDeletion($itemConfig),
         ];
     }
@@ -83,6 +84,15 @@ class DeleteOldSoftDeletes extends Command
         }
 
         return $itemName;
+    }
+
+    private function getConnectionName($itemName)
+    {
+        if (is_subclass_of($itemName, 'Illuminate\Database\Eloquent\Model')) {
+            return resolve($itemName)->getConnectionName();
+        }
+
+        return null;
     }
 
     private function getDaysBeforeDeletion($itemConfig)
