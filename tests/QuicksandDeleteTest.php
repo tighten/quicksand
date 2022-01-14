@@ -361,7 +361,7 @@ class QuicksandDeleteTest extends TestCase
     }
 
     /** @test */
-    public function connection_test()
+    public function it_works_on_multiple_connections()
     {
         factory(Car::class, 15)->state('deleted_old')->create();
 
