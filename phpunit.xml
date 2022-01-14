@@ -9,7 +9,7 @@
     </exclude>
   </coverage>
   <testsuites>
-    <testsuite name="Package Test Suite">
+    <testsuite name="Quicksand Tests">
       <directory suffix="Test.php">./tests/</directory>
     </testsuite>
   </testsuites>
