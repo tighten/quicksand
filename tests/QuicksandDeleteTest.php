@@ -5,6 +5,7 @@ use Models\GlobalScopedThing;
 use Models\Person;
 use Models\Place;
 use Models\Thing;
+use Models\Car;
 use Monolog\Logger;
 use Monolog\Handler\TestHandler;
 use Orchestra\Testbench\TestCase;
@@ -33,6 +34,11 @@ class QuicksandDeleteTest extends TestCase
             'driver' => 'sqlite',
             'database' => ':memory:',
             'prefix' => '',
+        ]);
+        $app['config']->set('database.connections.connection2', [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => 'c2_',
         ]);
         $app['config']->set('quicksand', $this->defaultQuicksandConfig);
     }
@@ -352,6 +358,22 @@ class QuicksandDeleteTest extends TestCase
         $this->deleteOldSoftDeletes();
 
         $this->assertNull($this->getLastLogMessage('quicksand'));
+    }
+
+    /** @test */
+    public function it_works_on_multiple_connections()
+    {
+        factory(Car::class, 15)->state('deleted_old')->create();
+
+        $this->setQuicksandConfig([
+            'deletables' => [
+                Car::class,
+            ],
+        ]);
+
+        $this->deleteOldSoftDeletes();
+
+        $this->assertEquals(0, Car::withTrashed()->count());
     }
 
     private function deleteOldSoftDeletes()
