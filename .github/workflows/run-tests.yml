@@ -34,7 +34,11 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: ~/.composer/cache/files
-          key: php-${{ matrix.php }}-laravel-${{ matrix.laravel }}-composer-${{ hashFiles('composer.lock') }}
+          key: php-${{ matrix.php }}-laravel-${{ matrix.laravel }}-composer-${{ matrix.dependencies }}-${{ hashFiles('composer.lock') }}
+          restore-keys: |
+            php-${{ matrix.php }}-laravel-${{ matrix.laravel }}-composer-${{ matrix.dependencies }}-
+            php-${{ matrix.php }}-laravel-${{ matrix.laravel }}-
+            php-${{ matrix.php }}-
       - uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
