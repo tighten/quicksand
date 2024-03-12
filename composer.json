@@ -37,7 +37,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Tightenco\\Quicksand\\": "src"
+            "Tighten\\Quicksand\\": "src"
         },
         "classmap": [
             "tests"
@@ -49,7 +49,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Tightenco\\Quicksand\\QuicksandServiceProvider"
+                "Tighten\\Quicksand\\QuicksandServiceProvider"
             ]
         }
     },
